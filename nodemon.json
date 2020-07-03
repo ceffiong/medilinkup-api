@@ -1,0 +1,8 @@
+{
+    "env": {
+        "MONGO_ATLAS_PW": "Medilinkup62150",
+        "HOST_ADDRESS": "http://localhost/api",
+        "HOST_PORT": "3000",
+        "JWT_KEY": "rsuaperrsnecreatdaivekyfoonrmyumdseomnly"
+    }
+}

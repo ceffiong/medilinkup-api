@@ -1,0 +1,39 @@
+_id: result._id,
+name: {
+    first_name: result.name.first_name,
+    last_name: result.name.last_name
+},
+DOB: result.DOB,
+gender: result.gender,
+contact:{
+    email: result.contact.email,
+    phone: result.contact.phone,
+    city: result.contact.city,
+    country: result.contact.country
+},
+created_by: {
+    _id : result.created_by._id,
+    name: {
+        first_name: result.created_by.name.first_name,
+        last_name: result.created_by.name.last_name,
+    },
+    request: {
+        type: 'GET',
+        url: nodemon.env.HOST_ADDRESS + ':' + nodemon.env.HOST_PORT + '/healthworkers/' + result.created_by._id,
+        description: 'Get creator details'
+    }
+},
+updated_by: {
+    _id : result.updated_by._id,
+    name: {
+        first_name: result.updated_by.name.first_name,
+        last_name: result.updated_by.name.last_name,
+    },
+    request: {
+        type: 'GET',
+        url: nodemon.env.HOST_ADDRESS + ':' + nodemon.env.HOST_PORT + '/healthworkers/' + result.created_by._id,
+        description: 'Get updater details'
+    }
+},
+created_at: req.body.created_at,
+updated_at: req.body.updated_at
