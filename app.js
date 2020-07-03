@@ -52,9 +52,9 @@ app.use('/api/patient_diagnostics', patientDiagnosticsRoute)
 
 
 //mongodb database connection
-//mongoose.connect('mongodb+srv://medilinkup:'+ process.env.MONGO_ATLAS_PW +'@medilinkup-api-2osl5.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
+mongoose.connect('mongodb+srv://medilinkup:'+ process.env.MONGO_ATLAS_PW +'@medilinkup-api-2osl5.mongodb.net/medilinkupdb?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
 
-mongoose.connect('mongodb://localhost:27017/medilinkupdb', {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true});
+//mongoose.connect('mongodb://localhost:27017/medilinkupdb', {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true});
 
 //Handle errors (all requests that went passed the above requests are errors)
 app.use((req, res, next) => {

@@ -1,6 +1,6 @@
 {
     "env": {
-        "MONGO_ATLAS_PW": "Medilinkup62150",
+        "MONGO_ATLAS_PW": "medilinkup",
         "HOST_ADDRESS": "ec2-52-3-255-170.compute-1.amazonaws.com",
         "HOST_PORT": "3000",
         "JWT_KEY": "rsuaperrsnecreatdaivekyfoonrmyumdseomnly"
