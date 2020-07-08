@@ -1,8 +1,11 @@
 {
     "env": {
         "MONGO_ATLAS_PW": "medilinkup",
-        "HOST_ADDRESS": "ec2-35-175-135-236.compute-1.amazonaws.com",
-        "HOST_PORT": "3000",
-        "JWT_KEY": "rsuaperrsnecreatdaivekyfoonrmyumdseomnly"
+        "HOST_ADDRESS": "http://localhost",
+        "HOST_PORT": "3001",
+        "JWT_KEY": "rsuaperrsnecreatdaivekyfoonrmyumdseomnly",
+        "CLIENT_ADDRESS": "http://localhost",
+        "CLIENT_PORT": "3000",
+        "REST_PASSWORD_JWT_KEY": "rsuapdfasdferrsnecreafjdhfaldjfltdaivekyfoondfasfrmyumdseomnly"
     }
 }

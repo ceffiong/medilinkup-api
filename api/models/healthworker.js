@@ -20,6 +20,9 @@ const healthworkerSchema = mongoose.Schema({
         country: {type: String, require: false},
     },
     activated: {type: Boolean, required: true, default: false},
+    reset_link: {
+        data: {data: String, default: ''}
+    },
     password: {type: String, require: true},
     created_at: {type: Date, require: false},
     updated_at: {type: Date, require: false}

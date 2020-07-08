@@ -21,6 +21,13 @@ router.get('/verify/:healthworkerId', checkAuth, HealthWorkerController.healthwo
 //sign up user
 router.post('/signup', HealthWorkerController.healthworker_signup)
 
+//send welcome email after signup
+router.post('/email', HealthWorkerController.welcome_email)
+
+router.put('/forgot-password', HealthWorkerController.forgot_password)
+
+router.put('/reset-password', HealthWorkerController.reset_password)
+
 
 //sign in user
 router.post('/login', HealthWorkerController.healthworker_login)

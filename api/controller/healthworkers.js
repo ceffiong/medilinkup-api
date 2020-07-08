@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 const nodemon = require('../../nodemon.json')
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+
 
 exports.healthworkers_get_all = (req, res, next) => {
     Healthworker.find().limit(500)
@@ -112,7 +114,6 @@ exports.healthworker_signup = (req, res, next) => {
                         healthworker
                             .save()
                             .then(result => {
-                                console.log(result);
                                 res.status(201).json({
                                     message: 'Health worker created!'
                                 });
@@ -129,6 +130,234 @@ exports.healthworker_signup = (req, res, next) => {
         })
 }
 
+
+exports.welcome_email = (req, res, next) => {
+    const id = req.body.id
+    Healthworker.findOne({"_id": id, "activated": false})
+        .exec()
+        .then(result => {
+            //send email
+            let transport = nodemailer.createTransport({
+                host: 'smtp.mailtrap.io',
+                port: 2525,
+                auth: {
+                   user: 'ccdbb5de73d16e',
+                   pass: '7daa03c6e407dd'
+                }
+            });
+
+            const message = {
+                from: result.contact.email, // Sender address
+                to: 'ceffiong-8a844a@inbox.mailtrap.io', // List of recipients
+                subject: 'Thank you for signing up', // Subject line
+                html: `
+                    <body style="margin:20px; font-family: Arial, Helvetica, sans-serif">
+                        <div style="background-color: #0D47A1; padding: 5px">
+                        <h1 style="color: white">
+                        MEDILINKUP eHealth Software
+                        </h1>
+                        </div>
+                        <p>
+                        <h2>
+                        Thank you for signing up ${result.name.first_name}
+                        </h2>
+                        </p>
+                        <p>
+                        Your account has been created and we have began our verification process. We will send you another confirmation email as soon as we activate your account. <br><br>
+                        
+                        Please allow us a few days to carry out our verification <br><br>
+                        
+                        Feel free to contact us at <a href="mailto:accounts@medilinkup.com">accounts@medilinkup.com</a> should you have any question regarding this process. <br><br>
+                        
+                        Thank you <br><br><br>
+                        
+                        Medilinkup Account Team &copy ${new Date().getFullYear()}
+                        </p>
+                    </body>
+                    `
+            };
+            transport.sendMail(message, function(err, info) {
+                if (err) {
+                    return res.status(500).json({
+                        message: "Email not sent",
+                        error: err
+                    });
+                } else {
+                    return res.status(200).json({
+                        message: 'Email sent'
+                    });
+                }
+            });
+
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).json({
+                error: err
+            });
+        })
+    
+
+}
+
+exports.forgot_password = (req, res, next) => {
+ const email = req.body.email
+ Healthworker.findOne({"contact.email": email})
+    .exec()
+    .then(healthworker => {
+	console.log("is worker activated: " + healthworker.activated)
+        if(!healthworker){
+            return res.status(400).json({
+                message: 'Healthworker not found'
+            })
+        }
+
+        if(!healthworker.activated){
+	console.log("I am not active")
+            return res.status(401).json({
+                message: 'Not activated'
+            })
+        }
+
+        const token = jwt.sign({id: healthworker._id}, 
+            nodemon.env.REST_PASSWORD_JWT_KEY,
+            {
+                expiresIn: "10m"
+            }
+        )
+
+        //send email
+        let transport = nodemailer.createTransport({
+            host: 'smtp.mailtrap.io',
+            port: 2525,
+            auth: {
+               user: 'ccdbb5de73d16e',
+               pass: '7daa03c6e407dd'
+            }
+        });
+
+        const message = {
+            //from: 'ceffiong-8a844a@inbox.mailtrap.io', // Sender address
+	    //to: healthworker.contact.email,
+	    from: healthworker.contact.email, // Sender address
+	    to: 'ceffiong-8a844a@inbox.mailtrap.io',
+            subject: 'Reset password', // Subject line
+            html: `
+                <body style="margin:20px; font-family: Arial, Helvetica, sans-serif">
+                <div style="background-color: #0D47A1; padding: 5px">
+                <h1 style="color: white">
+                MEDILINKUP eHealth Software
+                </h1>
+                </div>
+                <p>
+                <h2>
+                Hi ${healthworker.name.first_name},
+                </h2>
+                </p>
+                <p>
+                We received a request to reset your password for Medilinkup account <a href="mailto:talkwithcharles@gmail.com">talkwithcharles@gmail.com</a>.  <br><br>
+                
+                Please click on the Link below to rest your password. <br><br>
+                
+                <a href="${nodemon.env.CLIENT_ADDRESS}:${nodemon.env.CLIENT_PORT}/reset-password/${token}">Reset Password</a><br><br>
+                
+                Please note that the Link expires in 10 minutes <br><br>
+                
+                If you didn't ask to change your password, dont'worry! Your password is still safe and you can ignore this email<br><br><br>
+                
+                Regards,<br><br>
+                
+                Medilinkup Account Team &copy ${new Date().getFullYear()}
+                </p>
+                </body>
+                `
+        };
+
+        return Healthworker.updateOne({"contact.email": email}, {$set: {reset_link: token}})
+            .exec()
+            .then(result => {
+                transport.sendMail(message, function(err, info) {
+                    if (err) {
+                        return res.status(500).json({
+                            message: "Email not sent",
+                            error: err
+                        });
+                    } else {
+                        return res.status(200).json({
+                            message: 'Email sent'
+                        });
+                    }
+                });
+            })
+            .catch(err=>{
+                res.status(500).json({
+                    error: err
+                });
+            })
+    })
+    .catch(err=> {
+        console.log("Error")
+        res.status(500).json({
+            error: err
+        });
+    })
+
+}
+
+
+exports.reset_password = (req, res, next) => {
+    const reset_link = req.body.reset_link
+    const password = req.body.password
+    if(reset_link){
+        jwt.verify(reset_link, nodemon.env.REST_PASSWORD_JWT_KEY, function(error, decodedData) {
+            if(error){
+                return res.status(401).json({
+                    message: 'Auth failed'
+                })
+            }
+            Healthworker.findOne({reset_link: reset_link})
+                .exec()
+                .then(healthworker=>{
+                    if(!healthworker){
+                        return res.status(400).json({
+                            message: 'Healthworker not found'
+                        })
+                    }
+
+                    if(!healthworker.activated){
+                        return res.status(401).json({
+                            message: 'Not activated'
+                        })
+                    }
+
+                    return Healthworker.updateOne({"contact.email": healthworker.contact.email}, {$set: {password: password, reset_link: ""}})
+                        .exec()
+                        .then(result => {
+                            return res.status(200).json({
+                                message: 'Password reset'
+                            });
+                        })
+                        .catch(err=>{
+                            res.status(500).json({
+				error: err
+                            });
+                        })
+
+                })
+                .catch(err=>{
+                    return res.status(400).json({
+                        message: 'Healthworker not found'
+                    })
+                })
+        })
+
+    }else{
+        return res.status(401).json({
+            message: 'Auth failed'
+        })
+    }   
+}
+
 exports.healthworkers_verify = (req, res, next) => {
     const id = req.params.healthworkerId;
     Healthworker.findOne({"_id": id})
@@ -139,7 +368,6 @@ exports.healthworkers_verify = (req, res, next) => {
                     message: 'Auth failed'
                 })
             }
-            //we found the user, check password
             
             const token = jwt.sign(
                 {
@@ -284,7 +512,6 @@ exports.healthworker_get = (req, res, next) => {
 }
 
 exports.healthworker_update = (req, res, next) => {
-    console.log("I am here")
     const id = req.params.healthworkerId;
     const updateOps = {};
     for (const ops of req.body){
